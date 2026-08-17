@@ -1,4 +1,17 @@
 # ObservableCollections
+
+## Modification Notes
+
+This repository contains a modified version of Cysharp/ObservableCollections, adapted for compatibility with CsWinRT.
+
+To support CsWinRT projection, several changes have been made to the original implementation. These include the use of a Source Generator-like tool to automatically generate the required projection code, as well as making certain types partial where necessary. When using this code, please ensure that the accompanying Source Generator is included in your project.
+
+We have also incorporated some modifications from CommunityToolkit to add support for incremental loading.
+
+The original ObservableCollections project and the modifications in this repository are both licensed under the MIT License. We gratefully acknowledge and appreciate the Cysharp team and CommunityToolkit contributors for their excellent work and contributions.
+
+## Original README
+
 [![GitHub Actions](https://github.com/Cysharp/ObservableCollections/workflows/Build-Debug/badge.svg)](https://github.com/Cysharp/ObservableCollections/actions) [![Releases](https://img.shields.io/github/release/Cysharp/ObservableCollections.svg)](https://github.com/Cysharp/ObservableCollections/releases)
 
 ObservableCollections is a high performance observable collections(`ObservableList<T>`, `ObservableDictionary<TKey, TValue>`, `ObservableHashSet<T>`, `ObservableQueue<T>`, `ObservableStack<T>`, `ObservableRingBuffer<T>`, `ObservableFixedSizeRingBuffer<T>`) with synchronized views and Observe Extension for [R3](https://github.com/Cysharp/R3).

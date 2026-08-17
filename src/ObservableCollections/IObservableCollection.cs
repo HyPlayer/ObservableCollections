@@ -84,7 +84,8 @@ namespace ObservableCollections
     }
 
     // IColleciton<T>.Count and ICollection.Count will be ambigious so use abstract class instead of interface
-    public abstract class NotifyCollectionChangedSynchronizedViewList<TView> :
+    // Keep this hierarchy partial: instances are marshalled to XAML through the CsWinRT ABI.
+    public abstract partial class NotifyCollectionChangedSynchronizedViewList<TView> :
         INotifyCollectionChangedSynchronizedViewList<TView>,
         IWritableSynchronizedViewList<TView>,
         IList<TView>,

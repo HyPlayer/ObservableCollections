@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 
 namespace ObservableCollections;
 
-internal sealed class FiltableSynchronizedViewList<T, TView> : NotifyCollectionChangedSynchronizedViewList<TView>
+internal sealed partial class FiltableSynchronizedViewList<T, TView> : NotifyCollectionChangedSynchronizedViewList<TView>
 {
     static readonly PropertyChangedEventArgs CountPropertyChangedEventArgs = new("Count");
     static readonly Action<NotifyCollectionChangedEventArgs> raiseChangedEventInvoke = RaiseChangedEvent;
@@ -515,7 +515,7 @@ internal sealed class FiltableSynchronizedViewList<T, TView> : NotifyCollectionC
     }
 }
 
-internal sealed class NonFilteredSynchronizedViewList<T, TView> : NotifyCollectionChangedSynchronizedViewList<TView>
+public sealed partial class NonFilteredSynchronizedViewList<T, TView> : NotifyCollectionChangedSynchronizedViewList<TView>
 {
     static readonly PropertyChangedEventArgs CountPropertyChangedEventArgs = new("Count");
     static readonly Action<NotifyCollectionChangedEventArgs> raiseChangedEventInvoke = RaiseChangedEvent;

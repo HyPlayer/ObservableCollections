@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 
 namespace ObservableCollections;
 
-public class AlternateIndexList<T> : IEnumerable<T>
+public partial class AlternateIndexList<T> : IEnumerable<T>
 {
     List<IndexedValue> list; // alternate index is ordered
 
@@ -188,7 +188,7 @@ public class AlternateIndexList<T> : IEnumerable<T>
         }
     }
 
-    class InsertIterator(int startingIndex, IEnumerable<T> values) : IEnumerable<IndexedValue>, IEnumerator<IndexedValue>
+    partial class InsertIterator(int startingIndex, IEnumerable<T> values) : IEnumerable<IndexedValue>, IEnumerator<IndexedValue>
     {
         IEnumerator<T> iter = values.GetEnumerator();
         IndexedValue current;

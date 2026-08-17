@@ -48,7 +48,7 @@ public partial class ObservableList<T> : IList<T>, IReadOnlyObservableList<T>
     //}
 }
 
-internal sealed class ObservableListSynchronizedViewList<T> : NotifyCollectionChangedSynchronizedViewList<T>
+internal sealed partial class ObservableListSynchronizedViewList<T> : NotifyCollectionChangedSynchronizedViewList<T>
 {
     static readonly PropertyChangedEventArgs CountPropertyChangedEventArgs = new("Count");
     static readonly Action<NotifyCollectionChangedEventArgs> raiseChangedEventInvoke = RaiseChangedEvent;

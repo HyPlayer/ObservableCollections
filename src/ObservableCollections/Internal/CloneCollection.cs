@@ -10,7 +10,7 @@ namespace ObservableCollections.Internal
     /// <summary>
     /// ReadOnly cloned collection.
     /// </summary>
-    internal struct CloneCollection<T> : IDisposable
+    internal partial struct CloneCollection<T> : IDisposable
     {
         T[]? array;
         int length;
@@ -91,7 +91,7 @@ namespace ObservableCollections.Internal
         }
 
         // Optimize to use Count and CopyTo
-        class EnumerableCollection : ICollection<T>
+        partial class EnumerableCollection : ICollection<T>
         {
             readonly T[] array;
             readonly int count;

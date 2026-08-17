@@ -68,7 +68,7 @@ namespace ObservableCollections
         }
     }
 
-    public class CollectionEventDispatcherEventArgs : NotifyCollectionChangedEventArgs
+    public partial class CollectionEventDispatcherEventArgs : NotifyCollectionChangedEventArgs
     {
         // +state, init;
         public object Collection { get; set; } = default!;

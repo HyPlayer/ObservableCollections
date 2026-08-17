@@ -1,0 +1,51 @@
+<Project>
+  <PropertyGroup>
+    <_ObservableCollectionsGeneratorProject>$(MSBuildThisFileDirectory)..\ObservableCollections.SourceGenerator.csproj</_ObservableCollectionsGeneratorProject>
+    <_ObservableCollectionsGeneratorTool>$(MSBuildThisFileDirectory)..\bin\$(Platform)\$(Configuration)\net10.0\ObservableCollections.SourceGenerator.dll</_ObservableCollectionsGeneratorTool>
+  </PropertyGroup>
+
+  <Target Name="GenerateObservableCollectionsWinRTExposedExternalTypes"
+          BeforeTargets="CoreCompile"
+          DependsOnTargets="ResolveProjectReferences;ResolveReferences">
+    <PropertyGroup>
+      <!-- IntermediateOutputPath is initialized by the SDK targets after this file is imported. -->
+      <_ObservableCollectionsGeneratorDirectory>$(IntermediateOutputPath)ObservableCollections.SourceGenerator\</_ObservableCollectionsGeneratorDirectory>
+      <_ObservableCollectionsGeneratorOutput>$(_ObservableCollectionsGeneratorDirectory)ObservableCollections.GeneratedWinRTExposedExternalTypes.g.cs</_ObservableCollectionsGeneratorOutput>
+      <_ObservableCollectionsGeneratorSources>$(_ObservableCollectionsGeneratorDirectory)sources.rsp</_ObservableCollectionsGeneratorSources>
+      <_ObservableCollectionsGeneratorReferences>$(_ObservableCollectionsGeneratorDirectory)references.rsp</_ObservableCollectionsGeneratorReferences>
+    </PropertyGroup>
+
+    <MSBuild Projects="$(_ObservableCollectionsGeneratorProject)"
+             Targets="Build"
+             Properties="Configuration=$(Configuration);Platform=$(Platform);RuntimeIdentifier=$(RuntimeIdentifier)" />
+
+    <Error Condition="!Exists('$(_ObservableCollectionsGeneratorTool)')"
+           Text="ObservableCollections.SourceGenerator was not built: $(_ObservableCollectionsGeneratorTool)" />
+
+    <ItemGroup>
+      <_ObservableCollectionsGeneratorSource Include="@(Compile)"
+                                             Condition="Exists('%(FullPath)')" />
+      <_ObservableCollectionsGeneratorReference Include="@(ReferencePathWithRefAssemblies)" />
+      <_ObservableCollectionsGeneratorReference Include="@(ReferencePath)"
+                                                 Condition="'@(_ObservableCollectionsGeneratorReference)' == ''" />
+    </ItemGroup>
+
+    <MakeDir Directories="$(_ObservableCollectionsGeneratorDirectory)" />
+    <WriteLinesToFile File="$(_ObservableCollectionsGeneratorSources)"
+                      Lines="@(_ObservableCollectionsGeneratorSource->'%(FullPath)')"
+                      Overwrite="true"
+                      Encoding="UTF-8" />
+    <WriteLinesToFile File="$(_ObservableCollectionsGeneratorReferences)"
+                      Lines="@(_ObservableCollectionsGeneratorReference->'%(FullPath)')"
+                      Overwrite="true"
+                      Encoding="UTF-8" />
+
+    <Exec Command="dotnet exec &quot;$(_ObservableCollectionsGeneratorTool)&quot; --output &quot;$(_ObservableCollectionsGeneratorOutput)&quot; --sources &quot;$(_ObservableCollectionsGeneratorSources)&quot; --references &quot;$(_ObservableCollectionsGeneratorReferences)&quot;" />
+
+    <ItemGroup>
+      <Compile Remove="$(_ObservableCollectionsGeneratorOutput)" />
+      <Compile Include="$(_ObservableCollectionsGeneratorOutput)" />
+      <FileWrites Include="$(_ObservableCollectionsGeneratorOutput);$(_ObservableCollectionsGeneratorSources);$(_ObservableCollectionsGeneratorReferences)" />
+    </ItemGroup>
+  </Target>
+</Project>
