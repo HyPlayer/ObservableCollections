@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 
 namespace ObservableCollections;
 
-internal sealed partial class FiltableSynchronizedViewList<T, TView> : NotifyCollectionChangedSynchronizedViewList<TView>
+public sealed partial class FiltableSynchronizedViewList<T, TView> : NotifyCollectionChangedSynchronizedViewList<TView>
 {
     static readonly PropertyChangedEventArgs CountPropertyChangedEventArgs = new("Count");
     static readonly Action<NotifyCollectionChangedEventArgs> raiseChangedEventInvoke = RaiseChangedEvent;

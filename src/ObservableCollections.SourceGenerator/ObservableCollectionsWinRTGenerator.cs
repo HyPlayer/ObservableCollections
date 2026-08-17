@@ -45,29 +45,80 @@ internal static class ObservableCollectionsWinRTGenerator
         System.Threading.CancellationToken cancellationToken)
     {
         var method = semanticModel.GetSymbolInfo(invocation, cancellationToken).Symbol as IMethodSymbol;
-        if (method is null || method.Name is not ("ToNotifyCollectionChanged" or "ToViewList"))
+        if (method is null)
             return null;
 
         var definition = method.ReducedFrom ?? method;
-        if (definition.ContainingType.ToDisplayString() !=
+        var containingType = method.ContainingType;
+        var containingTypeDefinition = containingType.OriginalDefinition.ToDisplayString();
+
+        if (definition.ContainingType.ToDisplayString() ==
             "ObservableCollections.ObservableCollectionExtensions")
         {
-            return null;
+            if (method.Name is not ("ToNotifyCollectionChanged" or "ToViewList") ||
+                method.TypeArguments.Length is < 1 or > 2 ||
+                method.TypeArguments.Any(static type => !IsClosed(type)))
+            {
+                return null;
+            }
+
+            var sourceType = method.TypeArguments[0].ToDisplayString(TypeDisplayFormat);
+            var viewType = method.TypeArguments.Length == 1
+                ? sourceType
+                : method.TypeArguments[1].ToDisplayString(TypeDisplayFormat);
+
+            return ClosedGenericType(
+                "NonFilteredSynchronizedViewList",
+                sourceType,
+                viewType);
         }
 
-        if (method.TypeArguments.Length is < 1 or > 2 ||
-            method.TypeArguments.Any(static type => !IsClosed(type)))
+        if (containingTypeDefinition is
+                "ObservableCollections.ISynchronizedView<T, TView>" or
+                "ObservableCollections.IWritableSynchronizedView<T, TView>" &&
+            method.Name is
+                "ToNotifyCollectionChanged" or
+                "ToViewList" or
+                "ToWritableNotifyCollectionChanged" or
+                "ToWritableViewList" &&
+            containingType.TypeArguments is [var source, var view] &&
+            IsClosed(source) &&
+            IsClosed(view))
         {
-            return null;
+            return ClosedGenericType(
+                "FiltableSynchronizedViewList",
+                source.ToDisplayString(TypeDisplayFormat),
+                view.ToDisplayString(TypeDisplayFormat));
         }
 
-        var sourceType = method.TypeArguments[0].ToDisplayString(TypeDisplayFormat);
-        var viewType = method.TypeArguments.Length == 1
-            ? sourceType
-            : method.TypeArguments[1].ToDisplayString(TypeDisplayFormat);
+        if (containingTypeDefinition == "ObservableCollections.ObservableList<T>" &&
+            containingType.TypeArguments is [var item] &&
+            IsClosed(item))
+        {
+            var itemType = item.ToDisplayString(TypeDisplayFormat);
+            if (method.Name == "ToNotifyCollectionChangedSlim")
+                return $"global::ObservableCollections.ObservableListSynchronizedViewList<{itemType}>";
 
-        return $"global::ObservableCollections.NonFilteredSynchronizedViewList<{sourceType}, {viewType}>";
+            if (method.Name == "ToWritableNotifyCollectionChanged")
+            {
+                if (method.TypeArguments.Any(static type => !IsClosed(type)))
+                    return null;
+
+                var viewType = method.TypeArguments.Length == 0
+                    ? itemType
+                    : method.TypeArguments[0].ToDisplayString(TypeDisplayFormat);
+                return ClosedGenericType(
+                    "NonFilteredSynchronizedViewList",
+                    itemType,
+                    viewType);
+            }
+        }
+
+        return null;
     }
+
+    private static string ClosedGenericType(string name, string sourceType, string viewType) =>
+        $"global::ObservableCollections.{name}<{sourceType}, {viewType}>";
 
     private static string? GetIncrementalCollectionType(
         ExpressionSyntax creation,
