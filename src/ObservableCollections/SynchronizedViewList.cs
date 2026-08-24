@@ -190,8 +190,8 @@ public sealed partial class FiltableSynchronizedViewList<T, TView> : NotifyColle
                         var oldIndex = listView.RemoveAt(e.OldStartingIndex);
                         var newIndex = listView.Insert(e.NewStartingIndex, e.NewItem.View);
                         OnCollectionChanged(e.WithNewAndOldStartingIndex(newStartingIndex: newIndex, oldStartingIndex: oldIndex));
+                        return;
                     }
-                    break;
                 case NotifyCollectionChangedAction.Reset: // Clear or drastic changes
                     listView.Clear(IterateFilteredIndexedViewsOfParent()); // clear and fill refresh
                     break;
