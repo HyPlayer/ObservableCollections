@@ -18,7 +18,8 @@
 
     <MSBuild Projects="$(_ObservableCollectionsGeneratorProject)"
              Targets="Build"
-             Properties="Configuration=$(Configuration);Platform=$(_ObservableCollectionsGeneratorPlatform);RuntimeIdentifier=" />
+             Properties="Configuration=$(Configuration);Platform=$(_ObservableCollectionsGeneratorPlatform)"
+             RemoveProperties="RuntimeIdentifier" />
 
     <Error Condition="!Exists('$(_ObservableCollectionsGeneratorTool)')"
            Text="ObservableCollections.SourceGenerator was not built: $(_ObservableCollectionsGeneratorTool)" />
