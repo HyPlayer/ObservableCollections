@@ -1,7 +1,8 @@
 <Project>
   <PropertyGroup>
+    <_ObservableCollectionsGeneratorPlatform>x64</_ObservableCollectionsGeneratorPlatform>
     <_ObservableCollectionsGeneratorProject>$(MSBuildThisFileDirectory)..\ObservableCollections.SourceGenerator.csproj</_ObservableCollectionsGeneratorProject>
-    <_ObservableCollectionsGeneratorTool>$(MSBuildThisFileDirectory)..\bin\$(Platform)\$(Configuration)\net10.0\ObservableCollections.SourceGenerator.dll</_ObservableCollectionsGeneratorTool>
+    <_ObservableCollectionsGeneratorTool>$(MSBuildThisFileDirectory)..\bin\$(_ObservableCollectionsGeneratorPlatform)\$(Configuration)\net10.0\ObservableCollections.SourceGenerator.dll</_ObservableCollectionsGeneratorTool>
   </PropertyGroup>
 
   <Target Name="GenerateObservableCollectionsWinRTExposedExternalTypes"
@@ -17,7 +18,7 @@
 
     <MSBuild Projects="$(_ObservableCollectionsGeneratorProject)"
              Targets="Build"
-             Properties="Configuration=$(Configuration);Platform=$(Platform);RuntimeIdentifier=$(RuntimeIdentifier)" />
+             Properties="Configuration=$(Configuration);Platform=$(_ObservableCollectionsGeneratorPlatform);RuntimeIdentifier=" />
 
     <Error Condition="!Exists('$(_ObservableCollectionsGeneratorTool)')"
            Text="ObservableCollections.SourceGenerator was not built: $(_ObservableCollectionsGeneratorTool)" />
