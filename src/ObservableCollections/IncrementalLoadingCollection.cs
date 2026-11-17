@@ -32,6 +32,8 @@ public partial class IncrementalLoadingCollection<TSource, TItem> :
     private bool _hasMoreItems = true;
     private CancellationToken _cancellationToken;
     private bool _refreshOnLoad;
+    private bool _hasLoadError;
+    private int _generation;
 
     /// <summary>
     /// Initializes a new collection with the supplied source.
@@ -124,10 +126,17 @@ public partial class IncrementalLoadingCollection<TSource, TItem> :
         => LoadMoreItemsCoreAsync(count, new CancellationToken(false)).AsAsyncOperation();
 
     /// <summary>
+    /// Retries the failed page without clearing previously loaded items.
+    /// </summary>
+    public Task<LoadMoreItemsResult> RetryAsync()
+        => LoadMoreItemsCoreAsync(0, CancellationToken.None, retry: true);
+
+    /// <summary>
     /// Clears the collection and returns it to the first page.
     /// </summary>
     public Task RefreshAsync()
     {
+        _generation++;
         if (IsLoading)
         {
             _refreshOnLoad = true;
@@ -137,6 +146,7 @@ public partial class IncrementalLoadingCollection<TSource, TItem> :
             var previousCount = Count;
             Clear();
             CurrentPageIndex = 0;
+            _hasLoadError = false;
             HasMoreItems = true;
 
             if (previousCount == 0)
@@ -156,41 +166,56 @@ public partial class IncrementalLoadingCollection<TSource, TItem> :
             CurrentPageIndex,
             ItemsPerPage,
             cancellationToken);
-        CurrentPageIndex++;
         return result;
     }
 
     private async Task<LoadMoreItemsResult> LoadMoreItemsCoreAsync(
         uint count,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        bool retry = false)
     {
         uint resultCount = 0;
-        _cancellationToken = cancellationToken;
-
         await _mutex.WaitAsync();
+        if (retry ? !_hasLoadError : !HasMoreItems)
+        {
+            _mutex.Release();
+            return new LoadMoreItemsResult();
+        }
+
+        _cancellationToken = cancellationToken;
+        var generation = _generation;
         try
         {
             if (!_cancellationToken.IsCancellationRequested)
             {
-                IEnumerable<TItem>? data = null;
+                TItem[]? data = null;
                 try
                 {
+                    _hasLoadError = false;
+                    HasMoreItems = true;
                     IsLoading = true;
-                    data = await LoadDataAsync(_cancellationToken);
+                    data = (await LoadDataAsync(_cancellationToken)).ToArray();
                 }
                 catch (OperationCanceledException)
                 {
                 }
                 catch (Exception ex) when (OnError is not null)
                 {
+                    if (generation != _generation)
+                        return new LoadMoreItemsResult();
+                    _hasLoadError = true;
+                    HasMoreItems = false;
                     OnError(ex);
                 }
 
-                if (data is not null && data.Any() && !_cancellationToken.IsCancellationRequested)
+                if (generation != _generation)
+                    return new LoadMoreItemsResult();
+
+                if (data is { Length: > 0 } && !_cancellationToken.IsCancellationRequested)
                 {
-                    resultCount = (uint)data.Count();
-                    foreach (var item in data)
-                        Add(item);
+                    resultCount = (uint)data.Length;
+                    AddRange(data);
+                    CurrentPageIndex++;
                 }
                 else
                 {
